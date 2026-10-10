@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dota 2 Compendium Bingo (5x5)</title>
+  <title>Dota 2 Bingo 5x5 - с палитрой для 5 игроков</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -19,26 +19,26 @@
     h1 {
       color: #e5c158;
       text-shadow: 0 0 12px rgba(229,193,88,0.4);
-      margin-bottom: 5px;
+      margin-bottom: 10px;
       text-align: center;
     }
     .top-bar {
-      background: #181b22;
-      border: 1px solid #323846;
-      padding: 12px 20px;
-      border-radius: 8px;
-      margin-bottom: 15px;
       display: flex;
-      gap: 10px;
-      align-items: center;
       flex-wrap: wrap;
+      gap: 15px;
       justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+      background: #181b22;
+      padding: 12px 20px;
+      border-radius: 10px;
+      border: 1px solid #2a2e39;
     }
     button.btn-main {
       background: linear-gradient(135deg, #a32c2c, #631212);
       color: #fff;
       border: 1px solid #e5c158;
-      padding: 8px 16px;
+      padding: 10px 18px;
       font-weight: bold;
       cursor: pointer;
       border-radius: 6px;
@@ -50,23 +50,30 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 15px;
-      background: #181b22;
-      padding: 8px 15px;
-      border-radius: 8px;
+      flex-wrap: wrap;
     }
+    .player-selector label { font-size: 14px; font-weight: bold; color: #aaa; }
     .color-btn {
       width: 32px;
       height: 32px;
       border-radius: 50%;
       border: 2px solid transparent;
       cursor: pointer;
-      transition: transform 0.2s;
+      transition: transform 0.2s, border-color 0.2s;
     }
+    .color-btn:hover { transform: scale(1.15); }
     .color-btn.selected {
       border-color: #ffffff;
       box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
       transform: scale(1.2);
+    }
+
+    .main-container {
+      display: flex;
+      gap: 20px;
+      max-width: 900px;
+      width: 100%;
+      justify-content: center;
     }
 
     .grid {
@@ -86,145 +93,146 @@
       justify-content: center;
       text-align: center;
       padding: 6px;
-      font-size: 11px;
+      font-size: 12px;
       cursor: pointer;
       user-select: none;
+      transition: background 0.2s, transform 0.1s;
       word-break: break-word;
-      position: relative;
     }
     .cell:hover { border-color: #e5c158; }
 
     /* Цвета закрашивания */
-    .cell.p-blue   { background: #1b4f72 !important; border-color: #3498db; color: #fff; font-weight: bold; }
-    .cell.p-teal   { background: #117a65 !important; border-color: #1abc9c; color: #fff; font-weight: bold; }
-    .cell.p-purple { background: #6c3483 !important; border-color: #a569bd; color: #fff; font-weight: bold; }
-    .cell.p-yellow { background: #b7950b !important; border-color: #f1c40f; color: #fff; font-weight: bold; }
-    .cell.p-orange { background: #af601a !important; border-color: #e67e22; color: #fff; font-weight: bold; }
+    .cell.p-blue   { background: #1b4f72 !important; border-color: #3498db; font-weight: bold; color: #fff; }
+    .cell.p-teal   { background: #117a65 !important; border-color: #1abc9c; font-weight: bold; color: #fff; }
+    .cell.p-purple { background: #6c3483 !important; border-color: #a569bd; font-weight: bold; color: #fff; }
+    .cell.p-yellow { background: #b7950b !important; border-color: #f1c40f; font-weight: bold; color: #fff; }
+    .cell.p-orange { background: #af601a !important; border-color: #e67e22; font-weight: bold; color: #fff; }
 
     @media (max-width: 600px) {
-      .cell { font-size: 9px; padding: 2px; }
+      .cell { font-size: 10px; padding: 3px; }
+      .color-btn { width: 28px; height: 28px; }
     }
   </style>
 </head>
 <body>
 
-  <h1>DOTA 2 COMPENDIUM BINGO</h1>
+  <h1>DOTA 2 BINGO (5x5)</h1>
 
   <div class="top-bar">
-    <button class="btn-main" onclick="shareGame()">🔗 Скопировать ссылку для пати</button>
-    <button class="btn-main" style="background:#333; border-color:#555;" onclick="generateNewSeed()">🔄 Сгенерировать новую доску</button>
+    <button class="btn-main" onclick="generateBoard()">🔄 Сгенерировать карту (5x5)</button>
+    <button class="btn-main" style="background:#333; border-color:#666;" onclick="resetChecks()">🧹 Сбросить закраску</button>
+
+    <div class="player-selector">
+      <label>Выбери цвет игрока:</label>
+      <div class="color-btn selected" style="background:#3498db;" onclick="selectColor('p-blue', this)" title="Игрок 1 (Синий)"></div>
+      <div class="color-btn" style="background:#1abc9c;" onclick="selectColor('p-teal', this)" title="Игрок 2 (Бирюзовый)"></div>
+      <div class="color-btn" style="background:#a569bd;" onclick="selectColor('p-purple', this)" title="Игрок 3 (Пурпурный)"></div>
+      <div class="color-btn" style="background:#f1c40f;" onclick="selectColor('p-yellow', this)" title="Игрок 4 (Желтый)"></div>
+      <div class="color-btn" style="background:#e67e22;" onclick="selectColor('p-orange', this)" title="Игрок 5 (Оранжевый)"></div>
+      <div class="color-btn" style="background:#444; display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px;" onclick="selectColor('eraser', this)" title="Стереть">❌</div>
+    </div>
   </div>
 
-  <div class="player-selector">
-    <label style="font-size:13px; color:#aaa; margin-right:10px;">Твой цвет:</label>
-    <div class="color-btn selected" style="background:#3498db;" onclick="selectColor('p-blue', this)" title="Игрок 1"></div>
-    <div class="color-btn" style="background:#1abc9c;" onclick="selectColor('p-teal', this)" title="Игрок 2"></div>
-    <div class="color-btn" style="background:#a569bd;" onclick="selectColor('p-purple', this)" title="Игрок 3"></div>
-    <div class="color-btn" style="background:#f1c40f;" onclick="selectColor('p-yellow', this)" title="Игрок 4"></div>
-    <div class="color-btn" style="background:#e67e22;" onclick="selectColor('p-orange', this)" title="Игрок 5"></div>
-    <div class="color-btn" style="background:#444; display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; margin-left:10px;" onclick="selectColor('eraser', this)" title="Стереть">❌</div>
+  <div class="main-container">
+    <div class="grid" id="board"></div>
   </div>
-
-  <div class="grid" id="board"></div>
 
   <script>
     const eventsPool = [
-      "Умер до горна (00:00)", "First Blood сделали враги", "First Blood сделала ваша команда",
-      "Забрали 3+ руны богатства на 00:00", "Пудж не пикнут и не забанен", "Убийство героя до 02:00",
-      "Курьер умер на линии до 05:00", "Заденаена баунти-руна или лотус",
-      "Убит Рошан до 15:00", "Забрали Аегис 2+ раза за игру", "Украден Аегис или Сыр",
-      "Убит Терзатель (Tormentor)", "Убит курьер с предметом из потайной лавки",
-      "Разрушена T1 башня до 07:00", "Заденаена союзная башня (T1/T2/T3)",
-      "Разрушена первая T3 башня", "Победа с упавшей строной (мегакрипы)",
-      "Сделан Ultra Kill (4 килла)", "Сделан Rampage (5 киллов)", "Соло-килл вражеского керри",
-      "Куплен Hand of Midas до 12:00", "Куплен Hand of Midas после 20:00", "Куплен Divine Rapier",
-      "Выбита и подобрана Divine Rapier", "Куплен Gem of True Sight", "Куплен Blink Dagger до 10:00",
-      "Куплен Pipe of Insight или Crimson Guard", "Куплен Dagon 5 уровня", "Куплены Boots of Travel 2 уровня",
-      "Собрано 5 нейтральных шмоток 4+ тира", "Убийство героя уроном способности предметов",
-      "Герой умер от нейтрального крипа / Торментора", "Смерть от тика периодического урона",
-      "Смерть от отражения урона (Blade Mail)", "Убийство в инвизе без Detection",
-      "Герой умер сразу после выкупа (Buyback)", "Нажат выкуп 3+ героями в одном файте",
-      "Герой выжил с меньше чем 50 HP", "Урон по строениям > 10,000 у одного игрока",
-      "Серия убийств Beyond Godlike (10+ киллов)", "Убийство 2+ героев одной способностью",
-      "Вражеская баунти-руна украдена 3+ раза", "Убито 2+ курьера за игру",
-      "Снято 5+ обсервер вардов за игру", "Куплено 0 дастов против инвизника за 20 мин",
-      "Длительность игры > 50 минут", "Длительность игры < 25 минут",
-      "Разница по золоту > 15,000", "Комбэк с отставания > 10,000 золота",
-      "Установлен Обсервер вард на вражеский хайгроунд", "Сбита телепортация контролем",
-      "Герой умер с нераспечатанным Аегисом", "Ульт нажат в 0 героев", "Случайно сбит собственный телепорт",
-      "Случайно заденаил союзный вард", "Пауза в игре больше 2 минут",
-      "Игрок получил тип от врага после смерти", "Все 5 игроков собрались в смоке на 1 минуте"
+      // Игровые события и фарм
+      "Мидас после 20 минуты", "Легионка слила дуэль", "Пауза от врага после килла",
+      "Своровал Аганим на Рубике", "Купил Пайп до 15 минуты", "Союзник сгорел в войс",
+      "Зарашил Рапиру", "Враг затилтил и встал в афк", "Рошан убит на 1 уровне",
+      "ФБ до выхода крипов", "Оформили Rampage", "Случайно заденаил вард",
+      "Купил Gem и тут же потерял", "Типнули после промаха скиллом", "Вражеский керри без выкупа",
+      "Пудж промахнулся 5 хуками подряд", "Кто-то забыл нажать БКБ", "Стил аегиса",
+      "Мид проигран 0-3", "Тавер упал до 5 минуты", "Байбэк и сразу смерть",
+      "Купил не тот шмот в потайной лавке", "Умер от нейтралов", "Двойной подкоп / блинканулись в один клик",
+      "Умер с Аегисом без нажатия скиллов", "Ульт Пугны / Лиона в иллюзию", "Стил фрага курьером / вардом",
+      "Забрал нейтралку у кор-игрока", "Курьер убит на линии", "Купил BKB и не нажал ни разу",
+      "Файт на Торменторе закончился вайпом", "Умер от тика яда / кровотечения на базу",
+      "Хроносфера задела своих союзников", "Арена Марса спасла врага", "Случайно схавал обсервер / сенти",
+      "Сделали Rampage против вашей тимы", "Зашел в хайд / смок под вардом", "Купил 5 манго на старт",
+      "Заденаил союзную башню", "Нажал БКБ чтобы доесть пачку крипов",
+      
+      // Тильт, коммуникация и чат
+      "Кто-то пишет 'GG WP' до 10 минуты", "Пингует 100 раз на скилл союзника", "Враг пишет в общий чат после каждого килла",
+      "Мут союзника на 1-й минуте", "Кто-то врубил музыку в микрофон", "Вайб-килл: умерли всей тимой под фонтаном",
+      "Кто-то просит 'свопаться' в последнюю секунду", "Случайный пик (случайно нажал Random)",
+      "Отказ давать танго на мид", "Союзник ушел готовить пельмени / афк", "Вздох в микрофон длительностью 5 секунд",
+      "Угроза встать на амулет / сломать шмотки", "Союзник спорит с кем-то 10 минут про сборку",
+
+      // Эпичные и редкие моменты
+      "Убийство инвизника без варда / даста", "Блинк из ульты / скилла в последнюю миллисекунду",
+      "Заденаил союзного героя", "Убил курьера с 5 слотами", "Победа с упавшими 3 сторонами (Mega Creeps)",
+      "Игра затянулась дольше 60 минут", "Соло килл вражеского керри саппортом", "Украли терзателя у врагов",
+      "Аегис истек прямо перед файтом", "Убил врага с помощью лотуса / лопаты", "Ульт Снайпера / Аппарата через всю карту",
+      "Умер от отражения клинков (Blade Mail)", "Враг купил Divine Rapier", "Выбили Рапиру у врага",
+      "Прыжок Эннигмы в 5 героев (5-man Blackhole)", "Ульт Блэкхол в 0 героев", "Случайно продал нужный предмет",
+      "Купил вторую пару сапог", "Трэвела на 10 минуте", "Стил Рошана с помощью лотуса/скаутинга",
+      "Ульт Сайленсера в пустоту", "Вражеский саппорт перефармил вашего керри", "Покупка Dagon 5 уровня",
+      
+      // Герои и мемные билды
+      "Pudge 5 позиция", "Techies взрывает 3 героев сразу", "Invoker промахнулся метеором",
+      "Антимаг фармит 40 минут и умирает без байбэка", "Sniper с Шардом прыгает назад",
+      "Спирит Брейкер влетает под фонтан", "Huskar умирает на 1 уровне от нейтралов",
+      "Phantom Assassin не выдала ни одного крита", "Riki без дастов делает ULTRA KILL",
+      "Void Spirit улетел в текстуры", "Rubick спер ульт без копьях/дагона", "Crest / Solar Crest на 3-й минуте",
+      "Враг купил 3 Divine Rapier", "Морфлинг умер за 0.1 сек с перекачкой в ловкость",
+      "Зевс нажал ульт для скаута и забрал фрага", "Tinker пингует на ребинд",
+      "Nature's Prophet улетел спплитить и умер", "Свеном влетел в 5 с БКБ и словил свинку",
+      "Баратрум бежит через всю карту за саппортом", "Омник не успел нажать репел/ульт",
+      "Даззл дал крест после смерти", "Шейкер сделал Эхо Слэм в 1 героя", "Чен привел армию и снес Т3 за 12 мин",
+      "Лина / Лион взорвала героя с 100% HP", "Мипо промахнулся сеткой 3 раза", "Шторм прилетел без маны"
     ];
 
-    let myColor = 'p-blue';
+    let currentSelectedColor = 'p-blue';
 
-    function selectColor(colorClass, el) {
-      myColor = colorClass;
-      document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
-      el.classList.add('selected');
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
     }
 
-    // Простой Генератор Псевдорандома по сиду
-    function seededRandom(seed) {
-      let x = Math.sin(seed++) * 10000;
-      return x - Math.floor(x);
-    }
-
-    function getSeedFromUrl() {
-      const hash = window.location.hash.replace('#', '');
-      return hash ? parseInt(hash) : null;
+    function selectColor(className, element) {
+      currentSelectedColor = className;
+      document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('selected'));
+      element.classList.add('selected');
     }
 
     function generateBoard() {
-      let seed = getSeedFromUrl();
-      if (!seed) {
-        seed = Math.floor(Math.random() * 900000) + 100000;
-        window.location.hash = seed;
-      }
-
       const board = document.getElementById('board');
       board.innerHTML = '';
-
-      let poolCopy = [...eventsPool];
-      let selectedEvents = [];
-
-      let currentSeed = seed;
-      for (let i = 0; i < 25; i++) {
-        const randIndex = Math.floor(seededRandom(currentSeed++) * poolCopy.length);
-        selectedEvents.push(poolCopy.splice(randIndex, 1)[0]);
-      }
-
-      selectedEvents.forEach(text => {
+      
+      // Выбираем 25 случайных событий из 100+
+      const shuffled = shuffle([...eventsPool]).slice(0, 25);
+      
+      shuffled.forEach(text => {
         const cell = document.createElement('div');
         cell.className = 'cell';
         cell.innerText = text;
+        
         cell.onclick = () => {
-          if (myColor === 'eraser') {
+          if (currentSelectedColor === 'eraser') {
+            // Удаляем все цвета
             cell.className = 'cell';
           } else {
-            if (cell.classList.contains(myColor)) {
+            // Если уже закрашено этим цветом — сбрасываем, иначе ставим новый цвет
+            if (cell.classList.contains(currentSelectedColor)) {
               cell.className = 'cell';
             } else {
-              cell.className = 'cell ' + myColor;
+              cell.className = 'cell ' + currentSelectedColor;
             }
           }
         };
+        
         board.appendChild(cell);
       });
     }
 
-    function generateNewSeed() {
-      const newSeed = Math.floor(Math.random() * 900000) + 100000;
-      window.location.hash = newSeed;
-      generateBoard();
+    function resetChecks() {
+      document.querySelectorAll('.cell').forEach(c => c.className = 'cell');
     }
 
-    function shareGame() {
-      navigator.clipboard.writeText(window.location.href);
-      alert("Ссылка на эту доску скопирована в буфер обмена! Отправь её друзьям.");
-    }
-
-    window.onhashchange = generateBoard;
+    // Старт
     generateBoard();
   </script>
 </body>
