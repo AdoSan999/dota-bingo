@@ -178,6 +178,17 @@
     let boardState = Array(25).fill('');
     let boardTexts = [];
 
+    // Конфиг серверов Google для обхода блокировок P2P в РФ
+    const customPeerConfig = {
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' }
+        ]
+      }
+    };
+
     function selectColor(colorClass, el) {
       myColor = colorClass;
       document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
@@ -215,14 +226,23 @@
       broadcast({ type: 'CELL_CLICK', index, color: boardState[index] });
     }
 
-    function initPeer(id = null) {
-      peer = id ? new Peer(id) : new Peer();
+    function initPeer(customId = null) {
+      if (peer) peer.destroy();
+      
+      document.getElementById('status').innerText = 'Подключение к серверу...';
+      
+      peer = customId ? new Peer(customId, customPeerConfig) : new Peer(customPeerConfig);
       
       peer.on('open', (peerId) => {
         document.getElementById('status').innerText = 'Код комнаты: ' + peerId;
         if(isHost) {
-          alert("Скопируй этот код комнаты и отправь друзьям: " + peerId);
+          prompt("Скопируй этот код комнаты и отправь друзьям в Discord:", peerId);
         }
+      });
+
+      peer.on('error', (err) => {
+        console.error(err);
+        document.getElementById('status').innerText = 'Ошибка сети! Попробуй обновить';
       });
 
       peer.on('connection', (conn) => {
@@ -244,12 +264,19 @@
       const hostId = document.getElementById('join-id').value.trim();
       if (!hostId) return alert('Введи код комнаты!');
       isHost = false;
-      peer = new Peer();
+      document.getElementById('status').innerText = 'Подключение к комнате...';
+      
+      peer = new Peer(customPeerConfig);
       peer.on('open', () => {
         const conn = peer.connect(hostId);
         connections.push(conn);
         setupConn(conn);
         document.getElementById('status').innerText = 'Подключено к: ' + hostId;
+      });
+
+      peer.on('error', (err) => {
+        alert('Не удалось подключиться. Проверь код комнаты!');
+        document.getElementById('status').innerText = 'Ошибка подключения';
       });
     }
 
