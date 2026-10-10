@@ -1,10 +1,9 @@
-<!-- v2.0 -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dota 2 TI Official Style Bingo (5x5)</title>
+  <title>Dota 2 Compendium Bingo (5x5)</title>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <style>
     * { box-sizing: border-box; }
@@ -106,7 +105,7 @@
     }
     .cell:hover { border-color: #e5c158; }
 
-    /* Цвета закрашивания */
+    /* Цвета игроков */
     .cell.p-blue   { background: #1b4f72 !important; border-color: #3498db; color: #fff; font-weight: bold; }
     .cell.p-teal   { background: #117a65 !important; border-color: #1abc9c; color: #fff; font-weight: bold; }
     .cell.p-purple { background: #6c3483 !important; border-color: #a569bd; color: #fff; font-weight: bold; }
@@ -133,11 +132,11 @@
 
   <div class="player-selector">
     <label style="font-size:13px; color:#aaa; margin-right:10px;">Твой цвет:</label>
-    <div class="color-btn selected" style="background:#3498db;" onclick="selectColor('p-blue', this)"></div>
-    <div class="color-btn" style="background:#1abc9c;" onclick="selectColor('p-teal', this)"></div>
-    <div class="color-btn" style="background:#a569bd;" onclick="selectColor('p-purple', this)"></div>
-    <div class="color-btn" style="background:#f1c40f;" onclick="selectColor('p-yellow', this)"></div>
-    <div class="color-btn" style="background:#e67e22;" onclick="selectColor('p-orange', this)"></div>
+    <div class="color-btn selected" style="background:#3498db;" onclick="selectColor('p-blue', this)" title="Игрок 1"></div>
+    <div class="color-btn" style="background:#1abc9c;" onclick="selectColor('p-teal', this)" title="Игрок 2"></div>
+    <div class="color-btn" style="background:#a569bd;" onclick="selectColor('p-purple', this)" title="Игрок 3"></div>
+    <div class="color-btn" style="background:#f1c40f;" onclick="selectColor('p-yellow', this)" title="Игрок 4"></div>
+    <div class="color-btn" style="background:#e67e22;" onclick="selectColor('p-orange', this)" title="Игрок 5"></div>
     <button class="btn-main" style="margin-left:auto; background:#333; border-color:#555;" onclick="newBoard()">🔄 Новая доска</button>
   </div>
 
@@ -145,148 +144,11 @@
 
   <script>
     const eventsPool = [
-      // Точечные события старта и First Blood
       "Умер до горна (00:00)", "First Blood сделали враги", "First Blood сделала ваша команда",
       "Забрали 3+ руны богатства на 00:00", "Пудж не пикнут и не забанен", "Убийство героя до 02:00",
       "Курьер умер на линии до 05:00", "Заденаена баунти-руна или лотус",
-
-      // Официальные категории TI Compendium Bingo
       "Убит Рошан до 15:00", "Забрали Аегис 2+ раза за игру", "Украден Аегис или Сыр",
       "Убит Терзатель (Tormentor)", "Убит курьер с предметом из потайной лавки",
       "Разрушена T1 башня до 07:00", "Заденаена союзная башня (T1/T2/T3)",
       "Разрушена первая T3 башня", "Победа с упавшей строной (мегакрипы)",
-      "Сделан Ultra Kill (4 килла)", "Сделан Rampage (5 киллов)", "Соло-килл вражеского керри",
-      "Куплен Hand of Midas до 12:00", "Куплен Hand of Midas после 20:00", "Куплен Divine Rapier (вы или враг)",
-      "Выбита и подобрана Divine Rapier", "Куплен Gem of True Sight", "Куплен Blink Dagger до 10:00",
-      "Куплен Pipe of Insight или Crimson Guard", "Куплен Dagon 5 уровня", "Куплены Boots of Travel 2 уровня",
-      "Собрано 5 нейтральных шмоток 4+ тира", "Убийство героя предметом (Dagon/Urn/Radiance)",
-
-      // Четкие игровые ситуации и статистика
-      "Герой умер от нейтрального крипа / Торментора", "Смерть от тика периодического урона (Poison/Burn)",
-      "Смерть от отражения урона (Blade Mail)", "Убийство в инвизе без Detection (Дастов/Варда)",
-      "Герой умер сразу после выкупа (Buyback)", "Нажат выкуп (Buyback) 3+ героями в одном файте",
-      "Герой выжил с меньше чем 50 HP", "Урон по строениям > 10,000 у одного игрока",
-      "Серия убийств Beyond Godlike (10+ киллов без смертей)", "Убийство 2+ героев одной способностью",
-      "Вражеская баунти-руна украдена 3+ раза", "Убито 2+ курьера за одну игру",
-      "Снято 5+ обсервер вардов за игру", "Куплено 0 дастов против инвизника за 20 мин",
-      "Длительность игры > 50 минут", "Длительность игры < 25 минут",
-      "Разница по золоту > 15,000 в чью-либо пользу", "Комбэк с отставания > 10,000 золота",
-
-      // Действия игроков в матче
-      "Установлен Обсервер вард на вражеский хайгроунд", "Сбита телепортация (TP) контролем",
-      "Герой умер с нераспечатанным Аегисом", "Ульт нажат в 0 героев", "Случайно сбит собственный телепорт",
-      "Случайно заденаил союзный вард", "Пауза в игре длительностью больше 2 минут",
-      "Игрок получил тип (Tip) от врага после смерти", "Все 5 игроков собрались в смоке на 1 минуте",
-      "Игрок отключился от игры (Disconnect) во время файта"
-    ];
-
-    let myColor = 'p-blue';
-    let peer = null;
-    let connections = [];
-    let isHost = false;
-    let boardState = Array(25).fill('');
-    let boardTexts = [];
-
-    function selectColor(colorClass, el) {
-      myColor = colorClass;
-      document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
-      el.classList.add('selected');
-    }
-
-    function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
-
-    function newBoard() {
-      boardTexts = shuffle([...eventsPool]).slice(0, 25);
-      boardState = Array(25).fill('');
-      renderBoard();
-      broadcast({ type: 'SYNC_BOARD', texts: boardTexts, state: boardState });
-    }
-
-    function renderBoard() {
-      const board = document.getElementById('board');
-      board.innerHTML = '';
-      boardTexts.forEach((text, i) => {
-        const cell = document.createElement('div');
-        cell.className = 'cell ' + (boardState[i] || '');
-        cell.innerText = text;
-        cell.onclick = () => onCellClick(i);
-        board.appendChild(cell);
-      });
-    }
-
-    function onCellClick(index) {
-      if (boardState[index] === myColor) {
-        boardState[index] = '';
-      } else {
-        boardState[index] = myColor;
-      }
-      renderBoard();
-      broadcast({ type: 'CELL_CLICK', index, color: boardState[index] });
-    }
-
-    // Network (PeerJS)
-    function initPeer(id = null) {
-      peer = id ? new Peer(id) : new Peer();
-      
-      peer.on('open', (peerId) => {
-        document.getElementById('status').innerText = 'Код комнаты: ' + peerId;
-        if(isHost) {
-          alert("Скопируй этот код комнаты и отправь друзьям: " + peerId);
-        }
-      });
-
-      peer.on('connection', (conn) => {
-        connections.push(conn);
-        setupConn(conn);
-        setTimeout(() => {
-          conn.send({ type: 'SYNC_BOARD', texts: boardTexts, state: boardState });
-        }, 500);
-      });
-    }
-
-    function createRoom() {
-      isHost = true;
-      initPeer();
-      newBoard();
-    }
-
-    function joinRoom() {
-      const hostId = document.getElementById('join-id').value.trim();
-      if (!hostId) return alert('Введи код комнаты!');
-      isHost = false;
-      peer = new Peer();
-      peer.on('open', () => {
-        const conn = peer.connect(hostId);
-        connections.push(conn);
-        setupConn(conn);
-        document.getElementById('status').innerText = 'Подключено к: ' + hostId;
-      });
-    }
-
-    function setupConn(conn) {
-      conn.on('data', (data) => {
-        if (data.type === 'SYNC_BOARD') {
-          boardTexts = data.texts;
-          boardState = data.state;
-          renderBoard();
-        } else if (data.type === 'CELL_CLICK') {
-          boardState[data.index] = data.color;
-          renderBoard();
-          if (isHost) broadcast(data, conn);
-        }
-      });
-    }
-
-    function broadcast(data, excludeConn = null) {
-      connections.forEach(c => {
-        if (c !== excludeConn && c.open) {
-          c.send(data);
-        }
-      });
-    }
-
-    boardTexts = shuffle([...eventsPool]).slice(0, 25);
-    renderBoard();
-  </script>
-</body>
-</html>
+      "Сделан Ultra Kill (4 килла)", "Сделан Rampage (5 киллов)", "Соло-ки
