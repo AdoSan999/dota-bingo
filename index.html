@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dota 2 Compendium Bingo (5x5)</title>
-  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -23,10 +22,10 @@
       margin-bottom: 5px;
       text-align: center;
     }
-    .room-bar {
+    .top-bar {
       background: #181b22;
       border: 1px solid #323846;
-      padding: 12px;
+      padding: 12px 20px;
       border-radius: 8px;
       margin-bottom: 15px;
       display: flex;
@@ -34,14 +33,6 @@
       align-items: center;
       flex-wrap: wrap;
       justify-content: center;
-    }
-    input[type="text"] {
-      background: #0f1115;
-      border: 1px solid #e5c158;
-      color: #fff;
-      padding: 8px 12px;
-      border-radius: 4px;
-      outline: none;
     }
     button.btn-main {
       background: linear-gradient(135deg, #a32c2c, #631212);
@@ -54,8 +45,6 @@
       transition: all 0.2s;
     }
     button.btn-main:hover { background: linear-gradient(135deg, #c43737, #801818); }
-    
-    .status-text { font-size: 13px; color: #52c41a; font-weight: bold; }
     
     .player-selector {
       display: flex;
@@ -105,7 +94,7 @@
     }
     .cell:hover { border-color: #e5c158; }
 
-    /* Цвета игроков */
+    /* Цвета закрашивания */
     .cell.p-blue   { background: #1b4f72 !important; border-color: #3498db; color: #fff; font-weight: bold; }
     .cell.p-teal   { background: #117a65 !important; border-color: #1abc9c; color: #fff; font-weight: bold; }
     .cell.p-purple { background: #6c3483 !important; border-color: #a569bd; color: #fff; font-weight: bold; }
@@ -121,13 +110,9 @@
 
   <h1>DOTA 2 COMPENDIUM BINGO</h1>
 
-  <!-- Мультиплеер панель -->
-  <div class="room-bar">
-    <button class="btn-main" onclick="createRoom()">👑 Создать комнату</button>
-    <span>или</span>
-    <input type="text" id="join-id" placeholder="Код комнаты...">
-    <button class="btn-main" style="background:#2b5937; border-color:#52c41a;" onclick="joinRoom()">🔗 Войти</button>
-    <div class="status-text" id="status">Статус: Одиночный режим</div>
+  <div class="top-bar">
+    <button class="btn-main" onclick="shareGame()">🔗 Скопировать ссылку для пати</button>
+    <button class="btn-main" style="background:#333; border-color:#555;" onclick="generateNewSeed()">🔄 Сгенерировать новую доску</button>
   </div>
 
   <div class="player-selector">
@@ -137,7 +122,7 @@
     <div class="color-btn" style="background:#a569bd;" onclick="selectColor('p-purple', this)" title="Игрок 3"></div>
     <div class="color-btn" style="background:#f1c40f;" onclick="selectColor('p-yellow', this)" title="Игрок 4"></div>
     <div class="color-btn" style="background:#e67e22;" onclick="selectColor('p-orange', this)" title="Игрок 5"></div>
-    <button class="btn-main" style="margin-left:auto; background:#333; border-color:#555;" onclick="newBoard()">🔄 Новая доска</button>
+    <div class="color-btn" style="background:#444; display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; margin-left:10px;" onclick="selectColor('eraser', this)" title="Стереть">❌</div>
   </div>
 
   <div class="grid" id="board"></div>
@@ -172,22 +157,6 @@
     ];
 
     let myColor = 'p-blue';
-    let peer = null;
-    let connections = [];
-    let isHost = false;
-    let boardState = Array(25).fill('');
-    let boardTexts = [];
-
-    // Конфиг серверов Google для обхода блокировок P2P в РФ
-    const customPeerConfig = {
-      config: {
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-          { urls: 'stun:stun2.l.google.com:19302' }
-        ]
-      }
-    };
 
     function selectColor(colorClass, el) {
       myColor = colorClass;
@@ -195,115 +164,68 @@
       el.classList.add('selected');
     }
 
-    function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
-
-    function newBoard() {
-      boardTexts = shuffle([...eventsPool]).slice(0, 25);
-      boardState = Array(25).fill('');
-      renderBoard();
-      broadcast({ type: 'SYNC_BOARD', texts: boardTexts, state: boardState });
+    // Простой Генератор Псевдорандома по сиду
+    function seededRandom(seed) {
+      let x = Math.sin(seed++) * 10000;
+      return x - Math.floor(x);
     }
 
-    function renderBoard() {
+    function getSeedFromUrl() {
+      const hash = window.location.hash.replace('#', '');
+      return hash ? parseInt(hash) : null;
+    }
+
+    function generateBoard() {
+      let seed = getSeedFromUrl();
+      if (!seed) {
+        seed = Math.floor(Math.random() * 900000) + 100000;
+        window.location.hash = seed;
+      }
+
       const board = document.getElementById('board');
       board.innerHTML = '';
-      boardTexts.forEach((text, i) => {
+
+      let poolCopy = [...eventsPool];
+      let selectedEvents = [];
+
+      let currentSeed = seed;
+      for (let i = 0; i < 25; i++) {
+        const randIndex = Math.floor(seededRandom(currentSeed++) * poolCopy.length);
+        selectedEvents.push(poolCopy.splice(randIndex, 1)[0]);
+      }
+
+      selectedEvents.forEach(text => {
         const cell = document.createElement('div');
-        cell.className = 'cell ' + (boardState[i] || '');
+        cell.className = 'cell';
         cell.innerText = text;
-        cell.onclick = () => onCellClick(i);
+        cell.onclick = () => {
+          if (myColor === 'eraser') {
+            cell.className = 'cell';
+          } else {
+            if (cell.classList.contains(myColor)) {
+              cell.className = 'cell';
+            } else {
+              cell.className = 'cell ' + myColor;
+            }
+          }
+        };
         board.appendChild(cell);
       });
     }
 
-    function onCellClick(index) {
-      if (boardState[index] === myColor) {
-        boardState[index] = '';
-      } else {
-        boardState[index] = myColor;
-      }
-      renderBoard();
-      broadcast({ type: 'CELL_CLICK', index, color: boardState[index] });
+    function generateNewSeed() {
+      const newSeed = Math.floor(Math.random() * 900000) + 100000;
+      window.location.hash = newSeed;
+      generateBoard();
     }
 
-    function initPeer(customId = null) {
-      if (peer) peer.destroy();
-      
-      document.getElementById('status').innerText = 'Подключение к серверу...';
-      
-      peer = customId ? new Peer(customId, customPeerConfig) : new Peer(customPeerConfig);
-      
-      peer.on('open', (peerId) => {
-        document.getElementById('status').innerText = 'Код комнаты: ' + peerId;
-        if(isHost) {
-          prompt("Скопируй этот код комнаты и отправь друзьям в Discord:", peerId);
-        }
-      });
-
-      peer.on('error', (err) => {
-        console.error(err);
-        document.getElementById('status').innerText = 'Ошибка сети! Попробуй обновить';
-      });
-
-      peer.on('connection', (conn) => {
-        connections.push(conn);
-        setupConn(conn);
-        setTimeout(() => {
-          conn.send({ type: 'SYNC_BOARD', texts: boardTexts, state: boardState });
-        }, 500);
-      });
+    function shareGame() {
+      navigator.clipboard.writeText(window.location.href);
+      alert("Ссылка на эту доску скопирована в буфер обмена! Отправь её друзьям.");
     }
 
-    function createRoom() {
-      isHost = true;
-      initPeer();
-      newBoard();
-    }
-
-    function joinRoom() {
-      const hostId = document.getElementById('join-id').value.trim();
-      if (!hostId) return alert('Введи код комнаты!');
-      isHost = false;
-      document.getElementById('status').innerText = 'Подключение к комнате...';
-      
-      peer = new Peer(customPeerConfig);
-      peer.on('open', () => {
-        const conn = peer.connect(hostId);
-        connections.push(conn);
-        setupConn(conn);
-        document.getElementById('status').innerText = 'Подключено к: ' + hostId;
-      });
-
-      peer.on('error', (err) => {
-        alert('Не удалось подключиться. Проверь код комнаты!');
-        document.getElementById('status').innerText = 'Ошибка подключения';
-      });
-    }
-
-    function setupConn(conn) {
-      conn.on('data', (data) => {
-        if (data.type === 'SYNC_BOARD') {
-          boardTexts = data.texts;
-          boardState = data.state;
-          renderBoard();
-        } else if (data.type === 'CELL_CLICK') {
-          boardState[data.index] = data.color;
-          renderBoard();
-          if (isHost) broadcast(data, conn);
-        }
-      });
-    }
-
-    function broadcast(data, excludeConn = null) {
-      connections.forEach(c => {
-        if (c !== excludeConn && c.open) {
-          c.send(data);
-        }
-      });
-    }
-
-    boardTexts = shuffle([...eventsPool]).slice(0, 25);
-    renderBoard();
+    window.onhashchange = generateBoard;
+    generateBoard();
   </script>
 </body>
 </html>
