@@ -151,4 +151,132 @@
       "Убит Терзатель (Tormentor)", "Убит курьер с предметом из потайной лавки",
       "Разрушена T1 башня до 07:00", "Заденаена союзная башня (T1/T2/T3)",
       "Разрушена первая T3 башня", "Победа с упавшей строной (мегакрипы)",
-      "Сделан Ultra Kill (4 килла)", "Сделан Rampage (5 киллов)", "Соло-ки
+      "Сделан Ultra Kill (4 килла)", "Сделан Rampage (5 киллов)", "Соло-килл вражеского керри",
+      "Куплен Hand of Midas до 12:00", "Куплен Hand of Midas после 20:00", "Куплен Divine Rapier",
+      "Выбита и подобрана Divine Rapier", "Куплен Gem of True Sight", "Куплен Blink Dagger до 10:00",
+      "Куплен Pipe of Insight или Crimson Guard", "Куплен Dagon 5 уровня", "Куплены Boots of Travel 2 уровня",
+      "Собрано 5 нейтральных шмоток 4+ тира", "Убийство героя уроном способности предметов",
+      "Герой умер от нейтрального крипа / Торментора", "Смерть от тика периодического урона",
+      "Смерть от отражения урона (Blade Mail)", "Убийство в инвизе без Detection",
+      "Герой умер сразу после выкупа (Buyback)", "Нажат выкуп 3+ героями в одном файте",
+      "Герой выжил с меньше чем 50 HP", "Урон по строениям > 10,000 у одного игрока",
+      "Серия убийств Beyond Godlike (10+ киллов)", "Убийство 2+ героев одной способностью",
+      "Вражеская баунти-руна украдена 3+ раза", "Убито 2+ курьера за игру",
+      "Снято 5+ обсервер вардов за игру", "Куплено 0 дастов против инвизника за 20 мин",
+      "Длительность игры > 50 минут", "Длительность игры < 25 минут",
+      "Разница по золоту > 15,000", "Комбэк с отставания > 10,000 золота",
+      "Установлен Обсервер вард на вражеский хайгроунд", "Сбита телепортация контролем",
+      "Герой умер с нераспечатанным Аегисом", "Ульт нажат в 0 героев", "Случайно сбит собственный телепорт",
+      "Случайно заденаил союзный вард", "Пауза в игре больше 2 минут",
+      "Игрок получил тип от врага после смерти", "Все 5 игроков собрались в смоке на 1 минуте"
+    ];
+
+    let myColor = 'p-blue';
+    let peer = null;
+    let connections = [];
+    let isHost = false;
+    let boardState = Array(25).fill('');
+    let boardTexts = [];
+
+    function selectColor(colorClass, el) {
+      myColor = colorClass;
+      document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+
+    function newBoard() {
+      boardTexts = shuffle([...eventsPool]).slice(0, 25);
+      boardState = Array(25).fill('');
+      renderBoard();
+      broadcast({ type: 'SYNC_BOARD', texts: boardTexts, state: boardState });
+    }
+
+    function renderBoard() {
+      const board = document.getElementById('board');
+      board.innerHTML = '';
+      boardTexts.forEach((text, i) => {
+        const cell = document.createElement('div');
+        cell.className = 'cell ' + (boardState[i] || '');
+        cell.innerText = text;
+        cell.onclick = () => onCellClick(i);
+        board.appendChild(cell);
+      });
+    }
+
+    function onCellClick(index) {
+      if (boardState[index] === myColor) {
+        boardState[index] = '';
+      } else {
+        boardState[index] = myColor;
+      }
+      renderBoard();
+      broadcast({ type: 'CELL_CLICK', index, color: boardState[index] });
+    }
+
+    function initPeer(id = null) {
+      peer = id ? new Peer(id) : new Peer();
+      
+      peer.on('open', (peerId) => {
+        document.getElementById('status').innerText = 'Код комнаты: ' + peerId;
+        if(isHost) {
+          alert("Скопируй этот код комнаты и отправь друзьям: " + peerId);
+        }
+      });
+
+      peer.on('connection', (conn) => {
+        connections.push(conn);
+        setupConn(conn);
+        setTimeout(() => {
+          conn.send({ type: 'SYNC_BOARD', texts: boardTexts, state: boardState });
+        }, 500);
+      });
+    }
+
+    function createRoom() {
+      isHost = true;
+      initPeer();
+      newBoard();
+    }
+
+    function joinRoom() {
+      const hostId = document.getElementById('join-id').value.trim();
+      if (!hostId) return alert('Введи код комнаты!');
+      isHost = false;
+      peer = new Peer();
+      peer.on('open', () => {
+        const conn = peer.connect(hostId);
+        connections.push(conn);
+        setupConn(conn);
+        document.getElementById('status').innerText = 'Подключено к: ' + hostId;
+      });
+    }
+
+    function setupConn(conn) {
+      conn.on('data', (data) => {
+        if (data.type === 'SYNC_BOARD') {
+          boardTexts = data.texts;
+          boardState = data.state;
+          renderBoard();
+        } else if (data.type === 'CELL_CLICK') {
+          boardState[data.index] = data.color;
+          renderBoard();
+          if (isHost) broadcast(data, conn);
+        }
+      });
+    }
+
+    function broadcast(data, excludeConn = null) {
+      connections.forEach(c => {
+        if (c !== excludeConn && c.open) {
+          c.send(data);
+        }
+      });
+    }
+
+    boardTexts = shuffle([...eventsPool]).slice(0, 25);
+    renderBoard();
+  </script>
+</body>
+</html>
