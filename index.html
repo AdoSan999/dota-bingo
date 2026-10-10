@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Dota 2 Bingo with Friends</title>
+  <style>
+    body {
+      background-color: #121418;
+      color: #e1e1e1;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 { color: #e5c158; text-shadow: 0 0 10px rgba(229,193,88,0.3); }
+    .controls { margin-bottom: 20px; display: flex; gap: 10px; }
+    button {
+      background: linear-gradient(135deg, #a32c2c, #631212);
+      color: #fff;
+      border: 1px solid #e5c158;
+      padding: 10px 20px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    button:hover { background: linear-gradient(135deg, #c43737, #801818); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      max-width: 600px;
+      width: 100%;
+    }
+    .cell {
+      background: #1e222b;
+      border: 1px solid #3a4150;
+      border-radius: 8px;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 10px;
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+    }
+    .cell:hover { border-color: #e5c158; }
+    .cell.active {
+      background: #2b5937;
+      border-color: #52c41a;
+      color: #fff;
+      font-weight: bold;
+      text-decoration: line-through;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>DOTA 2 BINGO</h1>
+  <div class="controls">
+    <button onclick="generateBoard()">🔄 Перемешать события</button>
+    <button onclick="resetChecks()">🧹 Сбросить галочки</button>
+  </div>
+
+  <div class="grid" id="board"></div>
+
+  <script>
+    const events = [
+      "Мидас после 20 минуты", "Легионка слила дуэль", "Пауза от врага после килла",
+      "Своровал Аганим на Рубике", "Купил Пайп до 15 минуты", "Союзник сгорел в войс",
+      "Зарашил Рапиру", "Враг затилтил и встал в афк", "Рошан убит на 1 уровне",
+      "ФБ до выхода крипов", "Оформили Rampage", "Случайно заденаил вард",
+      "Купил Gem и тут же потерял", "Типнули после промаха скиллом", "Вражеский керри без выкупа",
+      "Пудж промахнулся 5 хуками подряд", "Кто-то забыл нажать БКБ", "Стил аегиса",
+      "Мид проигран 0-3", "Тавер упал до 5 минуты"
+    ];
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function generateBoard() {
+      const board = document.getElementById('board');
+      board.innerHTML = '';
+      const shuffled = shuffle([...events]).slice(0, 16);
+      
+      shuffled.forEach(text => {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.innerText = text;
+        cell.onclick = () => cell.classList.toggle('active');
+        board.appendChild(cell);
+      });
+    }
+
+    function resetChecks() {
+      document.querySelectorAll('.cell').forEach(c => c.classList.remove('active'));
+    }
+
+    generateBoard();
+  </script>
+</body>
+</html>
